@@ -56,20 +56,52 @@ def main():
 
 
     b, a = peaking(100,10,44100,15)
+    b1, a1 = peaking(1000,15,44100,15)
 ##    w,h = freqz(b, a, worN = 44100)
 ##    plt.figure()
 ##    plt.plot(w, 20 * np.log10(np.abs(h)))
 ##    plt.show()
 
 
+##    Y1 = lfilter(b,a,Xf)
+##    Y = lfilter(b1,a1,Y1)
 
-##    X = fft(audio)
-    Y = lfilter(b,a,Xf)
+    Y = lfilter(b,a, Xf)
+
 
 
     finalAudio = zTransformInverse(Y, 44100).real.astype(np.int16)
+
     wavfile.write("Test.wav",fs,finalAudio)
 
 
+def test_simple_EQ():
+    new_data = np.array([],"int16")
+    fs, data = wavfile.read('Music.wav') # load the data
+
+    b, a = peaking(100,10,44100,15) #Filtre
+
+    #decompose la stereo
+    audio_left = data.T[0] # un flux de la stereo
+    audio_right = data.T[1]
+
+
+    X_left = zTransform(audio_left, 44100)
+    X_right = zTransform(audio_right, 44100)
+
+
+    finalAudioLeft = zTransformInverse(lfilter(b,a,X_left), 44100).real
+    finalAudioRight = zTransformInverse(lfilter(b,a,X_right), 44100).real
+
+
+   #recompose la stereo
+    new_data = np.array([finalAudioLeft,finalAudioRight],"int16") #IMPORTANT il faut repasser le float en int16 pour eviter les saturations
+    new_data = new_data.T
+
+    wavfile.write("EQ.wav",fs,new_data)
+
+
 if __name__ == '__main__':
-    main()
+    test_simple_EQ()
+
+
