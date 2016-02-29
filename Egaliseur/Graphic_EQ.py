@@ -126,7 +126,7 @@ class Equalizer(Tk):
 
 
         self.sliderFrame = Frame(self.canvas)
-        self.sliderFrame.grid(row=1, column=0,columnspan=3, pady=10, padx=5)
+        self.sliderFrame.grid(row=1, column=0,columnspan=4, pady=10, padx=5)
 
 
         for i in range(10):
@@ -140,6 +140,8 @@ class Equalizer(Tk):
 
         self.startBtn = Button(self.canvas, text="Start", command=self.start)
         self.startBtn.grid(row=2, column=2, pady=10)
+        self.startBtn = Button(self.canvas, text="Reset", command=self.reset)
+        self.startBtn.grid(row=2, column=3, pady=10)
 
 
     def _afficheInfo(self,text):
@@ -156,13 +158,14 @@ class Equalizer(Tk):
 
         dType = data.T[0].dtype
         new_data = np.array([],dType)
-
         #decompose la stereo
         audio_left = data.T[0] # un flux de la stereo
         audio_right = data.T[1]
 
 
+        self._afficheInfo("Chargement canal gauche ")
         X_Left = zTransform(audio_left, fs)
+        self._afficheInfo("Chargement canal droit ")
         X_Right = zTransform(audio_right, fs)
 
         for i in range(10):
@@ -184,15 +187,18 @@ class Equalizer(Tk):
         new_data = np.array([finalAudioLeft,finalAudioRight],dType)
         new_data = new_data.T
 
-        wavfile.write(filename[:-4]+"_out.wav",fs,new_data)
+        f = open(filename[:-4]+'_out.wav','wb')
+        wavfile.write(f,fs,new_data)
         self._afficheInfo("New audio sound has been created")
+        f.close()
 
     def start(self):
         Thread(target=self._run).start()
-
-
-
-
+    def reset(self):
+        self.sliders=[]
+        for i in range(10):
+            slider = SliderFrequency(self.sliderFrame, self.freqs[i],10.0,0.0,20.0, i)
+            self.sliders.append(slider)
 
 if __name__ == '__main__':
     app = Equalizer(None)
