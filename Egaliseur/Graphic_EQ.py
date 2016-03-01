@@ -106,7 +106,7 @@ class Equalizer(Tk):
         self.trackPath = StringVar()
         self.info = StringVar()
         self.sliders = []
-        self.freqs = [32,62,125,250,500,1000,2000,4000,8000,16000]
+        self.freqs = [32,62,124,220,440,880,1320,1760,2220,2640]
 
         self.canvas = Canvas()
         self.canvas.pack(expand=YES,fill=BOTH)
@@ -172,10 +172,11 @@ class Equalizer(Tk):
             slider = self.sliders[i]
             gain = slider.getGain()
             frequency =  self.freqs[i]
+            print(gain)
             if gain==0.0 : continue #n'applique pas le filtre et passe au Slider suivant
 
             self._afficheInfo("Applying {} dB on {} Hz".format(gain,frequency))
-            b, a = peaking(frequency, gain ,fs ,5)
+            b, a = peaking(frequency, gain ,fs ,15)
             X_Left = lfilter(b, a, X_Left)
             X_Right = lfilter(b, a, X_Right)
 
