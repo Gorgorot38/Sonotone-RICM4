@@ -2,10 +2,7 @@
 """
 Created on Wed Mar 30 09:32:23 2016
 
-@author: Julian
-
- TODO:
-     Doc des filtres
+@author: Julian HATTINGUAIS
 """
 
 from type import TypeFilter as F
@@ -18,9 +15,31 @@ __all__ = ["Lowpass","Highpass","Bandpass","Notch", "Allpass","Peaking","Lowshel
 class _Biquad():
     """
         Design filter of second order with the equation:
-                 b0 + b1*z^-1 + b2*z^-2
-        H(z) = --------------------------
-                 a0 + a1*z^-1 + b1*z^-2
+             b0 + b1*z^-1 + b2*z^-2
+    H(z) = --------------------------
+             a0 + a1*z^-1 + b1*z^-2
+
+    parameters:
+        type: enum TypeFilter
+            type of filter
+
+        freq: float
+            cut-off frequency of filter in Hz
+
+        dbGain: float
+            gain of filter
+
+        bandwidthOrQOrS: float
+            quality of filter
+            if isBandwidth == True quality is expressed in Hz
+
+        srate: float, optional
+            sample rate of filter
+            default: 44100
+
+        isBandwidth: boolean, optional
+            indicate if quality of filter is a bandwith
+            default: False
     """
 
     def __init__(self, type, freq, dbGain, bandwidthOrQOrS, srate=44100., isBandwidth=False):
@@ -48,24 +67,74 @@ class _Biquad():
         self._a = array([1.])
 
     def coefficients(self):
+        """
+        Return the filter's coefficients
+
+        return:
+            b, a: tuple of ndarray
+                b and a coefficients of filter
+        """
         return self._b, self._a
 
     def _setCoef(self, b, a):
+        """
+        Set the coefficients of filter
+
+        parameters:
+            b: ndarray
+                The numerator coefficient vector in a 1-D sequence.
+            a: ndarray
+                The denominator coefficient vector in a 1-D sequence.
+
+        """
         if (type(b) != type(array([]))) or (type(a) != type(array([]))) :
             raise TypeError("Parameters a and b must be a numpy array")
+
+        if b.shape[0] == 0 or a.shape[0] == 0 :
+            raise IndexError("Parameters b and a must have a size >=1")
 
         self._b = b
         self._a = a
 
     def filter(self,x):
+        """
+        Filter data sequence
+
+        parameter:
+            x:ndarray
+                An N-dimensional input array.
+        return:
+            y: array
+                The output of the digital filter.
+        """
+
         if type(x) != type(array([])) :
-            raise TypeError("Parameters x must be a numpy array")
+            raise TypeError("Parameter x must be a numpy array")
 
         return lfilter(self._b, self._a, x)
 
 class Lowpass(_Biquad):
+    """
+    Biquad lowpass of second order filter design
 
-    def __init__(self, freq, bandwidthOrQOrS, srate=44100, isBandwidth=False):
+    parameters:
+        freq: float
+            cut-off frequency of filter in Hz
+
+        bandwidthOrQOrS: float
+            quality of filter
+            if isBandwidth == True quality is expressed in Hz
+
+        srate: float, optional
+            sample rate of filter
+            default: 44100
+
+        isBandwidth: boolean, optional
+            indicate if quality of filter is a bandwith
+            default: False
+    """
+
+    def __init__(self, freq, bandwidthOrQOrS, srate=44100., isBandwidth=False):
         _Biquad.__init__(self,F.LOW_PASS,freq,0.0,bandwidthOrQOrS,srate,isBandwidth)
 
         b0 = (1. - self.cs) / 2.
@@ -78,8 +147,27 @@ class Lowpass(_Biquad):
         self._setCoef(array([b0/a0,b1/a0,b2/a0]),array([1.,a1/a0,a2/a0]))
 
 class Highpass(_Biquad):
+    """
+    Biquad highpass of second order filter design
 
-    def __init__(self, freq, bandwidthOrQOrS, srate=44100, isBandwidth=False):
+    parameters:
+        freq: float
+            cut-off frequency of filter in Hz
+
+        bandwidthOrQOrS: float
+            quality of filter
+            if isBandwidth == True quality is expressed in Hz
+
+        srate: float, optional
+            sample rate of filter
+            default: 44100
+
+        isBandwidth: boolean, optional
+            indicate if quality of filter is a bandwith
+            default: False
+    """
+
+    def __init__(self, freq, bandwidthOrQOrS, srate=44100., isBandwidth=False):
         _Biquad.__init__(self,F.HIGH_PASS,freq,0.0,bandwidthOrQOrS,srate,isBandwidth)
 
         b0 = (1. +  self.cs) / 2.
@@ -92,8 +180,27 @@ class Highpass(_Biquad):
         self._setCoef(array([b0/a0,b1/a0,b2/a0]),array([1.,a1/a0,a2/a0]))
 
 class Bandpass(_Biquad):
+    """
+    Biquad bandpass of second order filter design
 
-    def __init__(self, freq, bandwidthOrQOrS, srate=44100, isBandwidth=False):
+    parameters:
+        freq: float
+            cut-off frequency of filter in Hz
+
+        bandwidthOrQOrS: float
+            quality of filter
+            if isBandwidth == True quality is expressed in Hz
+
+        srate: float, optional
+            sample rate of filter
+            default: 44100
+
+        isBandwidth: boolean, optional
+            indicate if quality of filter is a bandwith
+            default: False
+    """
+
+    def __init__(self, freq, bandwidthOrQOrS, srate=44100., isBandwidth=False):
         _Biquad.__init__(self,F.BAND_PASS,freq,0.0,bandwidthOrQOrS,srate,isBandwidth)
 
         b0 = self.alpha
@@ -106,8 +213,27 @@ class Bandpass(_Biquad):
         self._setCoef(array([b0/a0,b1/a0,b2/a0]),array([1.,a1/a0,a2/a0]))
 
 class Notch(_Biquad):
+    """
+    Biquad notch second of order filter design
 
-    def __init__(self, freq, bandwidthOrQOrS, srate=44100, isBandwidth=False):
+    parameters:
+        freq: float
+            cut-off frequency of filter in Hz
+
+        bandwidthOrQOrS: float
+            quality of filter
+            if isBandwidth == True quality is expressed in Hz
+
+        srate: float, optional
+            sample rate of filter
+            default: 44100
+
+        isBandwidth: boolean, optional
+            indicate if quality of filter is a bandwith
+            default: False
+    """
+
+    def __init__(self, freq, bandwidthOrQOrS, srate=44100., isBandwidth=False):
         _Biquad.__init__(self,F.NOTCH,freq,0.0,bandwidthOrQOrS,srate,isBandwidth)
 
         b0 = 1.
@@ -121,8 +247,27 @@ class Notch(_Biquad):
 
 
 class Allpass(_Biquad):
+    """
+    Biquad allpass of second order filter design
 
-    def __init__(self, freq, bandwidthOrQOrS, isBandwidth, srate=44100):
+    parameters:
+        freq: float
+            cut-off frequency of filter in Hz
+
+        bandwidthOrQOrS: float
+            quality of filter
+            if isBandwidth == True quality is expressed in Hz
+
+        srate: float, optional
+            sample rate of filter
+            default: 44100
+
+        isBandwidth: boolean, optional
+            indicate if quality of filter is a bandwith
+            default: False
+    """
+
+    def __init__(self, freq, bandwidthOrQOrS, isBandwidth, srate=44100.):
         _Biquad.__init__(self,F.ALL_PASS,freq,0.0,bandwidthOrQOrS,isBandwidth,srate)
 
         b0 = 1. - self.alpha
@@ -136,8 +281,30 @@ class Allpass(_Biquad):
 
 
 class Peaking(_Biquad):
+    """
+    Biquad peaking of second order filter design
 
-    def __init__(self, freq, dbGain, bandwidthOrQOrS,srate=44100, isBandwidth=False):
+    parameters:
+        freq: float
+            cut-off frequency of filter in Hz
+
+        dbGain: float
+            gain of filter
+
+        bandwidthOrQOrS: float
+            quality of filter
+            if isBandwidth == True quality is expressed in Hz
+
+        srate: float, optional
+            sample rate of filter
+            default: 44100
+
+        isBandwidth: boolean, optional
+            indicate if quality of filter is a bandwith
+            default: False
+    """
+
+    def __init__(self, freq, dbGain, bandwidthOrQOrS,srate=44100., isBandwidth=False):
         _Biquad.__init__(self,F.PEAKING,freq,dbGain,bandwidthOrQOrS,srate,isBandwidth)
 
         b0 = 1. + (self.alpha * self.A)
@@ -151,8 +318,25 @@ class Peaking(_Biquad):
 
 
 class Lowshelf(_Biquad):
+    """
+    Biquad lowshelf of second order filter design
 
-    def __init__(self, freq, dbGain, bandwidthOrQOrS, srate=44100):
+    parameters:
+        freq: float
+            cut-off frequency of filter in Hz
+
+        dbGain: float
+            gain of filter
+
+        bandwidthOrQOrS: float
+            quality of filter
+
+        srate: float, optional
+            sample rate of filter
+            default: 44100
+    """
+
+    def __init__(self, freq, dbGain, bandwidthOrQOrS, srate=44100.):
         _Biquad.__init__(self,F.LOW_SHELF,freq,dbGain,bandwidthOrQOrS,srate)
 
         b0 = self.A * ((self.A + 1.) - (self.A - 1.) * self.cs + self.beta)
@@ -166,8 +350,25 @@ class Lowshelf(_Biquad):
 
 
 class Highshelf(_Biquad):
+    """
+    Biquad highshelf of second order filter design
 
-    def __init__(self, freq, dbGain, bandwidthOrQOrS, srate=44100):
+    parameters:
+        freq: float
+            cut-off frequency of filter in Hz
+
+        dbGain: float
+            gain of filter
+
+        bandwidthOrQOrS: float
+            quality of filter
+
+        srate: float, optional
+            sample rate of filter
+            default: 44100
+    """
+
+    def __init__(self, freq, dbGain, bandwidthOrQOrS, srate=44100.):
         _Biquad.__init__(self,F.HIGH_SHELF,freq,dbGain,bandwidthOrQOrS,srate)
 
         b0 = self.A * ((self.A + 1.) + (self.A - 1.) * self.cs + self.beta)
@@ -189,8 +390,6 @@ if __name__ == "__main__":
 
     for filt in filters:
         x = filt.filter(x)
-
-
 
     print(x)
 
