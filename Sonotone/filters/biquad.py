@@ -9,9 +9,6 @@ from type import TypeFilter as F
 from numpy import sqrt, sin, sinh, cos, pi, log, array, ones
 from scipy.signal import lfilter
 
-__all__ = ["Lowpass","Highpass","Bandpass","Notch", "Allpass","Peaking","Lowshelf","Highshelf"]
-
-
 class _Biquad():
     """
         Design filter of second order with the equation:
@@ -134,7 +131,7 @@ class Lowpass(_Biquad):
             default: False
     """
 
-    def __init__(self, freq, bandwidthOrQOrS, srate=44100., isBandwidth=False):
+    def __init__(self, freq, bandwidthOrQOrS=1/sqrt(2), srate=44100., isBandwidth=False):
         _Biquad.__init__(self,F.LOW_PASS,freq,0.0,bandwidthOrQOrS,srate,isBandwidth)
 
         b0 = (1. - self.cs) / 2.
@@ -167,7 +164,7 @@ class Highpass(_Biquad):
             default: False
     """
 
-    def __init__(self, freq, bandwidthOrQOrS, srate=44100., isBandwidth=False):
+    def __init__(self, freq, bandwidthOrQOrS=1/sqrt(2), srate=44100., isBandwidth=False):
         _Biquad.__init__(self,F.HIGH_PASS,freq,0.0,bandwidthOrQOrS,srate,isBandwidth)
 
         b0 = (1. +  self.cs) / 2.
@@ -200,7 +197,7 @@ class Bandpass(_Biquad):
             default: False
     """
 
-    def __init__(self, freq, bandwidthOrQOrS, srate=44100., isBandwidth=False):
+    def __init__(self, freq, bandwidthOrQOrS=1/sqrt(2), srate=44100., isBandwidth=False):
         _Biquad.__init__(self,F.BAND_PASS,freq,0.0,bandwidthOrQOrS,srate,isBandwidth)
 
         b0 = self.alpha
@@ -233,7 +230,7 @@ class Notch(_Biquad):
             default: False
     """
 
-    def __init__(self, freq, bandwidthOrQOrS, srate=44100., isBandwidth=False):
+    def __init__(self, freq, bandwidthOrQOrS=1/sqrt(2), srate=44100., isBandwidth=False):
         _Biquad.__init__(self,F.NOTCH,freq,0.0,bandwidthOrQOrS,srate,isBandwidth)
 
         b0 = 1.
@@ -267,7 +264,7 @@ class Allpass(_Biquad):
             default: False
     """
 
-    def __init__(self, freq, bandwidthOrQOrS, isBandwidth, srate=44100.):
+    def __init__(self, freq, bandwidthOrQOrS=1/sqrt(2), srate=44100.,isBandwidth=False):
         _Biquad.__init__(self,F.ALL_PASS,freq,0.0,bandwidthOrQOrS,isBandwidth,srate)
 
         b0 = 1. - self.alpha
@@ -336,7 +333,7 @@ class Lowshelf(_Biquad):
             default: 44100
     """
 
-    def __init__(self, freq, dbGain, bandwidthOrQOrS, srate=44100.):
+    def __init__(self, freq, dbGain, bandwidthOrQOrS=1/sqrt(2), srate=44100.):
         _Biquad.__init__(self,F.LOW_SHELF,freq,dbGain,bandwidthOrQOrS,srate)
 
         b0 = self.A * ((self.A + 1.) - (self.A - 1.) * self.cs + self.beta)
@@ -368,7 +365,7 @@ class Highshelf(_Biquad):
             default: 44100
     """
 
-    def __init__(self, freq, dbGain, bandwidthOrQOrS, srate=44100.):
+    def __init__(self, freq, dbGain, bandwidthOrQOrS=1/sqrt(2), srate=44100.):
         _Biquad.__init__(self,F.HIGH_SHELF,freq,dbGain,bandwidthOrQOrS,srate)
 
         b0 = self.A * ((self.A + 1.) + (self.A - 1.) * self.cs + self.beta)
