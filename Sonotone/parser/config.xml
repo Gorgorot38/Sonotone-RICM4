@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<config>
-	<filters>
-		<filter type="Peaking" freq="100.0" gain="10.0" Q="0.717" />
-		<filter type="Lowpass" freq="1000.0" Q="0.717" />
-	</filters>
-	<Test> 10 </Test>
-</config>

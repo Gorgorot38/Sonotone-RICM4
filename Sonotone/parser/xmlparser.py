@@ -5,28 +5,15 @@ Created on Thu Mar 31 14:27:17 2016
 @author: Julian
 """
 
-import sys
-from os.path import dirname, join
-
-dirname =  dirname(__file__)
-root = dirname[:dirname.rfind('/')]
-if root not in sys.path:
-    sys.path.insert(0, join(root))
-
 import xml.etree.ElementTree as ET
-from filters import TypeFilter as F
-from filters.biquad import *
+from Sonotone.filters import TypeFilter as F
+from Sonotone.filters.biquad import *
 
 class ConfigParser():
 
     def __init__(self, filename):
         if len(filename)<5 or filename[-4:] != ".xml":
             raise NameError("Filename incorrect, must be an xml file")
-
-        self.root = ET.parse(filename).getroot()
-        if self.root.tag != 'config' :
-            raise NameError("The root tag must be called 'config'")
-
 
         self._filters = []
         self.filename = filename
@@ -35,7 +22,14 @@ class ConfigParser():
         """
         Parse the xml file for creation of a list of filters
         """
+
+        self.root = ET.parse(self.filename).getroot()
+        if self.root.tag != 'config' :
+            raise NameError("The root tag must be called 'config'")
+
         confElements = self.root.getchildren()
+
+        if len(self._filters) != 0 : self._filters = []
 
         for element in confElements:
             if element.tag == 'filters':
@@ -43,7 +37,9 @@ class ConfigParser():
                     fType = F.get(filterTag.get('type'))
                     if fType is None: continue
 
-                    self._filters.append(self._instanciateFilter(fType,filterTag.attrib))
+                    dicFilt = filterTag.attrib
+                    dicFilt.update({"filterFunc":self._instanciateFilter(fType,filterTag.attrib)})
+                    self._filters.append(dicFilt)
 
 
     def _instanciateFilter(self,typeF, args):
@@ -70,11 +66,15 @@ class ConfigParser():
 
         return eval("{}({})".format(typeF, strArgs))
 
+    def filters(self):
+        """ Return parsed filters """
+        return self._filters
+
 
 
 if __name__ == "__main__":
 
-	cp = ConfigParser('config.xml')
+	cp = ConfigParser('../config.xml')
 	cp.parse()
 	print cp._filters
 
