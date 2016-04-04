@@ -84,9 +84,6 @@ class _Biquad():
                 The denominator coefficient vector in a 1-D sequence.
 
         """
-        if (type(b) != type(array([]))) or (type(a) != type(array([]))) :
-            raise TypeError("Parameters a and b must be a numpy array")
-
         if b.shape[0] == 0 or a.shape[0] == 0 :
             raise IndexError("Parameters b and a must have a size >=1")
 
@@ -265,7 +262,7 @@ class Allpass(_Biquad):
     """
 
     def __init__(self, freq, bandwidthOrQOrS=1/sqrt(2), srate=44100.,isBandwidth=False):
-        _Biquad.__init__(self,F.ALL_PASS,freq,0.0,bandwidthOrQOrS,isBandwidth,srate)
+        _Biquad.__init__(self,F.ALL_PASS,freq,0.0,bandwidthOrQOrS,srate,isBandwidth)
 
         b0 = 1. - self.alpha
         b1 = -2. * self.cs
@@ -378,17 +375,45 @@ class Highshelf(_Biquad):
         self._setCoef(array([b0/a0,b1/a0,b2/a0]),array([1.,a1/a0,a2/a0]))
 
 if __name__ == "__main__":
-    lp = Lowpass(100.0,2.0)
-    lh = Highpass(100.0,2.0)
+    from numpy import log10, abs
+    import matplotlib.pyplot as plt
+    from scipy.signal import freqz
 
-    filters = [lp,lh]
 
-    x = ones(4096)
+    def showResponse(b, a, nbPoint):
+        w,h = freqz(b, a, worN = nbPoint)
 
-    for filt in filters:
-        x = filt.filter(x)
+        plt.figure()
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Amplitude [dB]')
+        plt.grid(which='both', axis='both')
+        plt.semilogx((nbPoint*w)/(2*pi), 20 * log10(abs(h)))
+        plt.show()
 
-    print(x)
+    lp = Lowpass(100.0)
+    b, a = lp.coefficients()
+    showResponse(b,a,44100)
+
+    b, a = Highpass(100.0).coefficients()
+    showResponse(b,a,44100)
+
+    b, a = Bandpass(100.0).coefficients()
+    showResponse(b,a,44100)
+
+    b, a = Allpass(100.0).coefficients()
+    showResponse(b,a,44100)
+
+    b, a = Notch(100.0).coefficients()
+    showResponse(b,a,44100)
+
+    b, a = Peaking(100.0,10.,1/sqrt(2)).coefficients()
+    showResponse(b,a,44100)
+
+    b, a = Lowshelf(100.0,10.).coefficients()
+    showResponse(b,a,44100)
+
+    b, a = Highshelf(100.0,10.).coefficients()
+    showResponse(b,a,44100)
 
 
 
