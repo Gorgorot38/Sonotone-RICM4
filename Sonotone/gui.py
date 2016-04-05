@@ -14,7 +14,7 @@ if root not in sys.path:
     sys.path.insert(0, join(root))
 
 import numpy as np
-from threading import Thread, Lock
+from threading import Thread
 from os.path import isfile
 from copy import deepcopy
 from time import sleep
@@ -25,9 +25,9 @@ from Sonotone.parser import *
 
 
 try:
-    from tkinter import Label, StringVar, Grid, Entry, Tk, LEFT, VERTICAL, Grid, Canvas, YES, BOTH
+    from tkinter import Label, StringVar, Tk, LEFT, VERTICAL, Grid, Canvas, YES, BOTH
 except:
-    from Tkinter import Label, StringVar, Grid, Entry, Tk, LEFT, VERTICAL, Grid, Canvas, YES, BOTH
+    from Tkinter import Label, StringVar, Tk, LEFT, VERTICAL, Grid, Canvas, YES, BOTH
 try:
     from tkinter.ttk import Button, Frame, Scale
 except:
@@ -96,7 +96,7 @@ class GUI(Tk):
         self.configFile = "config.xml"
 
         self.cw = ConfigWritter(self.configFile)
-        if not isfile(self.configFile): self._createConfigFile() #TODO
+        if not isfile(self.configFile): self._createConfigFile()
         self.cp = ConfigParser(self.configFile)
         self._parseConfigFile()
 
@@ -172,7 +172,6 @@ class GUI(Tk):
         self._afficheInfo("")
 
     def _createConfigFile(self):
-        #TODO
         frequency = [32,62,125,250,440,1000,2000,4000,8000,16000]
 
         for i in range(10):

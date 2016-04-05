@@ -9,5 +9,3 @@ from Sonotone.filters import *
 from Sonotone.parser import *
 
 __all__ = [s for s in dir() if not s.startswith('_')]
-
-

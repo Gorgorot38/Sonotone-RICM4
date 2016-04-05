@@ -36,6 +36,11 @@ class ConfigWritter():
         with open(self.filename,"w") as f:
             f.write(self._prettify(self.root))
 
+        filtersTag = self.root.find("filters")
+
+        for fElement in filtersTag.findall("filter"):
+            filtersTag.remove(fElement)
+
     def _prettify(self,elem):
         """Return a pretty-printed XML string for the Element. """
 

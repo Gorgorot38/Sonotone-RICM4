@@ -4,12 +4,12 @@
 		<filter Q="0.717" freq="32.0" gain="13.7" id="1" type="Peaking"/>
 		<filter Q="0.717" freq="64.0" gain="9.7" id="2" type="Peaking"/>
 		<filter Q="0.717" freq="125.0" gain="10.0" id="3" type="Peaking"/>
-		<filter Q="0.717" freq="250.0" gain="10.0" id="4" type="Peaking"/>
-		<filter Q="0.717" freq="500.0" gain="8.6" id="5" type="Peaking"/>
-		<filter Q="0.717" freq="1000.0" gain="8.8" id="6" type="Peaking"/>
-		<filter Q="0.717" freq="2000.0" gain="8.0" id="7" type="Peaking"/>
-		<filter Q="0.717" freq="4000.0" gain="6.0" id="8" type="Peaking"/>
-		<filter Q="0.717" freq="8000.0" gain="20.0" id="9" type="Peaking"/>
-		<filter Q="0.717" freq="16000.0" gain="10.0" id="10" type="Peaking"/>
+		<filter Q="0.717" freq="250.0" gain="13.9" id="4" type="Peaking"/>
+		<filter Q="0.717" freq="500.0" gain="0.0" id="5" type="Peaking"/>
+		<filter Q="0.717" freq="1000.0" gain="0.0" id="6" type="Peaking"/>
+		<filter Q="0.717" freq="2000.0" gain="0.0" id="7" type="Peaking"/>
+		<filter Q="0.717" freq="4000.0" gain="0.0" id="8" type="Peaking"/>
+		<filter Q="0.717" freq="8000.0" gain="0.0" id="9" type="Peaking"/>
+		<filter Q="0.717" freq="16000.0" gain="0.0" id="10" type="Peaking"/>
 	</filters>
 </config>
