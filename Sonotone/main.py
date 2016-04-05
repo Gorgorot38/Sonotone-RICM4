@@ -6,10 +6,11 @@ Created on Tue Apr 05 09:18:50 2016
 """
 
 import sys
-from os.path import dirname, join
+from os.path import dirname, join, abspath
 
-dirname =  dirname(__file__)
-root = dirname[:dirname.rfind('/')]
+
+dir =  dirname(abspath(__file__)).replace("\\","/")
+root = dir[:dir.rfind('/')]
 if root not in sys.path:
     sys.path.insert(0, join(root))
 
