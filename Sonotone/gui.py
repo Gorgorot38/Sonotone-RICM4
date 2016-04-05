@@ -21,17 +21,18 @@ from time import sleep
 
 
 from Sonotone.filters.biquad import *
+from Sonotone.filters import TypeFilter as F
 from Sonotone.parser import *
 
 
 try:
-    from tkinter import Label, StringVar, Tk, LEFT, VERTICAL, Grid, Canvas, YES, BOTH
+    from tkinter import Label, Entry, StringVar, Tk, LEFT, VERTICAL, Grid, Canvas, YES, BOTH
 except:
-    from Tkinter import Label, StringVar, Tk, LEFT, VERTICAL, Grid, Canvas, YES, BOTH
+    from Tkinter import Label, Entry, StringVar, Tk, LEFT, VERTICAL, Grid, Canvas, YES, BOTH
 try:
-    from tkinter.ttk import Button, Frame, Scale
+    from tkinter.ttk import Button, Frame, Scale, Combobox
 except:
-    from ttk import Button, Frame, Scale
+    from ttk import Button, Frame, Scale, Combobox
 
 
 
@@ -56,13 +57,13 @@ class SliderFrequency(Frame):
 
     def initialize(self):
         self.slider = Scale(self.root, orient=VERTICAL, from_=self.min, to=self.max, value=float(self.gain.get()), command=self._updateValue)
-        self.slider.grid(row=0,column=self.id, padx=10)
+        self.slider.grid(row=0,column=self.id, padx=14)
 
         self.valueLbl = Label(self.root, anchor="w", textvariable=self.value)
-        self.valueLbl.grid(row=1,column=self.id, padx=10)
+        self.valueLbl.grid(row=1,column=self.id, padx=14)
 
         self.freqLbl = Label(self.root,text=str(self.freq)+" Hz")
-        self.freqLbl.grid(row=2,column=self.id, padx=10)
+        self.freqLbl.grid(row=2,column=self.id, padx=14)
 
     def _updateValue(self,event):
         self.gain.set(self.slider.get())
@@ -81,6 +82,36 @@ class SliderFrequency(Frame):
         return self.freq
 
 
+class SliderParameter(Frame):
+    def __init__(self,root, type, Q, id):
+        Frame.__init__(self,root)
+
+        self.root = root
+        self.typeFilter = StringVar()
+        self.typeFilter.set(type)
+        self.qFactor = StringVar()
+        self.qFactor.set(Q)
+        self.id = id
+
+        self.initialize()
+
+    def initialize(self):
+        self.typeCombo = Combobox(self.root, textvariable=self.typeFilter, values=F.values(), width="5")
+        self.typeCombo.grid(row=1,column=self.id, padx=10)
+
+        self.qText = Entry(self.root, textvariable=self.qFactor, width="5")
+        self.qText.grid(row=2,column=self.id, padx=10, pady=5)
+
+    def getQ(self):
+        return self.qFactor.get()
+
+    def getType(self):
+        return self.typeCombo.get()
+
+
+
+
+
 
 class GUI(Tk):
 
@@ -88,8 +119,13 @@ class GUI(Tk):
         Tk.__init__(self,root)
         self.root = root
 
+        self.MAX_F = 12
+
         self.info = StringVar()
         self.sliders = []
+        self.parameters = []
+        self.filters = []
+        self.isAdvancedMode = False
 
         self.isWritting = False
 
@@ -109,22 +145,28 @@ class GUI(Tk):
 
 
     def initialize(self):
-        self.top = Frame(self.canvas)
-        self.top.grid(row=0,column=0, columnspan=10, padx=5, pady=10)
 
         self.sliderFrame = Frame(self.canvas)
-        self.sliderFrame.grid(row=1, column=0,columnspan=10, pady=10, padx=5)
+        self.sliderFrame.grid(row=0, column=0,columnspan=self.MAX_F, pady=10, padx=5)
 
         self._setSliders()
 
         self.infoLabel = Label(self.canvas, text="", textvariable=self.info)
-        self.infoLabel.grid(row=2, column=0,columnspan=5)
+        self.infoLabel.grid(row=1, column=2,columnspan=5)
 
-        self.resetBtn = Button(self.canvas, text="Reset", command=self._setSliders)
-        self.resetBtn.grid(row=2, column=8, pady=10)
+        self.advancedBtn = Button(self.canvas, text="Advanced", command = self._showParameters)
+        self.advancedBtn.grid(row=1, column=0, pady=10)
+
+        self.resetBtn = Button(self.canvas, text="Reset", command=self._resetGUI)
+        self.resetBtn.grid(row=1, column=10, pady=10)
 
         self.saveBtn = Button(self.canvas, text="Save", command=self._save)
-        self.saveBtn.grid(row=2, column=9, pady=10)
+        self.saveBtn.grid(row=1, column=11, pady=10)
+
+        self.parametersFrame = Frame(self.canvas)
+
+        self._setParameters()
+
 
 
     def _afficheInfo(self,text):
@@ -138,7 +180,7 @@ class GUI(Tk):
         for widget in self.sliderFrame.winfo_children():
             widget.destroy()
 
-        for i in range(10):
+        for i in range(self.MAX_F):
             filter = self.filters[i]
             gain = 0.0 if "gain" not in filter.keys() else filter["gain"]
             slider = SliderFrequency(self.sliderFrame, str(int(float(filter["freq"]))),gain,0.0,20.0, filter["id"])
@@ -151,12 +193,16 @@ class GUI(Tk):
 
     def _run(self):
         self.isWritting = True
-        for i in range(10):
+        for i in range(self.MAX_F):
             slider = self.sliders[i]
             filter = self.filters[i]
+            param = self.parameters[i]
 
             values = deepcopy(filter)
             values["gain"] = str(slider.getGain())
+            values["freq"] = str(slider.getFrequency())
+            values["Q"] = param.getQ()
+            values["type"] = param.getType()
 
             self.cw.write(values)
         self.cw.close()
@@ -171,10 +217,35 @@ class GUI(Tk):
         sleep(0.5)
         self._afficheInfo("")
 
-    def _createConfigFile(self):
-        frequency = [32,62,125,250,440,1000,2000,4000,8000,16000]
+    def _resetGUI(self):
+        self._setSliders()
+        self._setParameters()
 
-        for i in range(10):
+    def _setParameters(self):
+        if len(self.sliders)>0: self.parameters = []
+
+        for widget in self.parametersFrame.winfo_children():
+            widget.destroy()
+
+        for i in range(self.MAX_F):
+            filter = self.filters[i]
+            param = SliderParameter(self.parametersFrame,filter["type"], filter["Q"], filter["id"])
+            self.parameters.append(param)
+
+
+    def _showParameters(self):
+        if self.isAdvancedMode:
+            self.parametersFrame.grid_forget()
+            self.isAdvancedMode = False
+        else:
+            self.parametersFrame.grid(row=2, column=0,columnspan=self.MAX_F, pady=10, padx=5)
+            self.isAdvancedMode = True
+
+
+    def _createConfigFile(self):
+        frequency = [64,125,250,500,750,1000,1500,2000,3000,4000,6000,8000]
+
+        for i in range(self.MAX_F):
             values = {"type":"Peaking","freq":str(frequency[i]),"gain":"0.0","Q":"0.717","id":str(i)}
             self.cw.write(values)
         self.cw.close()

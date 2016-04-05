@@ -32,7 +32,6 @@ class ConfigWritter():
         filterTag.append(ET.Element("filter",argumentsFilter))
 
     def close(self):
-#        ET.ElementTree(self.root).write(self.self.filename)
         with open(self.filename,"w") as f:
             f.write(self._prettify(self.root))
 
