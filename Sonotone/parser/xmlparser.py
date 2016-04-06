@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Thu Mar 31 14:27:17 2016
@@ -10,6 +11,13 @@ from Sonotone.filters import TypeFilter as F
 from Sonotone.filters.biquad import *
 
 class ConfigParser():
+    """
+        Parser for a config file
+
+        parameter:
+            filename: String
+                Name of the config file
+    """
 
     def __init__(self, filename):
         if len(filename)<5 or filename[-4:] != ".xml":

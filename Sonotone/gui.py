@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Mon Apr 04 10:59:10 2016
@@ -38,6 +39,23 @@ except:
 
 
 class SliderFrequency(Frame):
+    """
+        A slider with label wich indicate the gain in dB and Frequency in Hz
+
+        parameters:
+            root: Canvas
+                the canvas to place the slider
+            freq: float
+                the frequency in Hz
+            val: float
+                initial value of the slider
+            Min: float
+                the min value of the slider
+            Max: float
+                the maximum of value of the slider
+            sId: int
+                the ID of the slider
+    """
     def __init__(self,root, freq, val, Min=0.0, Max=1.0, sId=0):
         Frame.__init__(self,root)
 
@@ -56,6 +74,7 @@ class SliderFrequency(Frame):
         self.gain.set(self._Gain(val))
 
     def initialize(self):
+        """ Initialize the slider and the label"""
         self.slider = Scale(self.root, orient=VERTICAL, from_=self.min, to=self.max, value=float(self.gain.get()), command=self._updateValue)
         self.slider.grid(row=0,column=self.id, padx=14)
 
@@ -66,23 +85,41 @@ class SliderFrequency(Frame):
         self.freqLbl.grid(row=2,column=self.id, padx=14)
 
     def _updateValue(self,event):
+        """ update the gain value and label when the slider is changing """
         self.gain.set(self.slider.get())
         self.value.set(str(self._Gain(self.gain.get()))+" dB")
         self.valueLbl.update()
 
     def _Gain(self, value):
+        """ Transform the value of the slider to correct gain value  """
         v = (((self.max-self.min))-float(value))
         v = int(v*10)/10.0
         return v
 
     def getGain(self):
+        """ Return the gain """
         return float(self._Gain(self.gain.get()))
 
     def getFrequency(self):
+        """ Return the frequency """
         return self.freq
 
 
 class SliderParameter(Frame):
+    """
+        A frame contening additionnals parameters for filter (represented by a SliderFrequency)
+        to set the type and the Q factor
+
+        parameters:
+            root: Canvas
+                the canvas to place the SliderParameter
+            type: String
+                A string representing the type of a filter
+            Q: String
+                the Q factor of a filter
+            id: int
+                ID of th SliderParameter
+    """
     def __init__(self,root, type, Q, id):
         Frame.__init__(self,root)
 
@@ -96,6 +133,9 @@ class SliderParameter(Frame):
         self.initialize()
 
     def initialize(self):
+        """ Initialize the combobox contening all available type of filter
+            and the entry text to choose the value of Q factor
+        """
         self.typeCombo = Combobox(self.root, textvariable=self.typeFilter, values=F.values(), width="5")
         self.typeCombo.grid(row=1,column=self.id, padx=10)
 
@@ -103,17 +143,27 @@ class SliderParameter(Frame):
         self.qText.grid(row=2,column=self.id, padx=10, pady=5)
 
     def getQ(self):
+        """ return the value of the Q factor """
         return self.qFactor.get()
 
     def getType(self):
+        """ Return the type of the filter """
         return self.typeCombo.get()
 
 
 
 
-
-
 class GUI(Tk):
+    """
+        The main module for the GUI
+
+        Show an interface to allow to configure differents filters
+        wich are used to filtering audio
+
+        parameter:
+            root: Frame
+                The main frame
+    """
 
     def __init__(self,root):
         Tk.__init__(self,root)
@@ -145,6 +195,7 @@ class GUI(Tk):
 
 
     def initialize(self):
+        """ Initialize all graphicals components of the GUI """
 
         self.sliderFrame = Frame(self.canvas)
         self.sliderFrame.grid(row=0, column=0,columnspan=self.MAX_F, pady=10, padx=5)
@@ -169,12 +220,14 @@ class GUI(Tk):
 
 
 
-    def _afficheInfo(self,text):
+    def _show(self,text):
+        """ Set text on info label """
         self.info.set(text)
         self.update()
 
 
     def _setSliders(self):
+        """ Initialize all sliders used for set the gain for a defined frequency """
         if len(self.sliders)>0: self.sliders = []
 
         for widget in self.sliderFrame.winfo_children():
@@ -187,11 +240,13 @@ class GUI(Tk):
             self.sliders.append(slider)
 
     def _parseConfigFile(self):
+        """ Parse the configuration file and get values to set frequency sliders """
         self.cp.parse()
         self.filters = self.cp.filters()
 
 
     def _run(self):
+        """ Save the current configuration into the config file """
         self.isWritting = True
         for i in range(self.MAX_F):
             slider = self.sliders[i]
@@ -211,17 +266,20 @@ class GUI(Tk):
 
 
     def _save(self):
+        """ Launch thread to save configuration """
         if self.isWritting: return
         Thread(target=self._run).start()
-        self._afficheInfo("New configuration saved")
+        self._show("New configuration saved")
         sleep(0.5)
-        self._afficheInfo("")
+        self._show("")
 
     def _resetGUI(self):
+        """ Cancel all modifications """
         self._setSliders()
         self._setParameters()
 
     def _setParameters(self):
+        """ Initialize all parameters for frequency sliders, which are used in advanced mode """
         if len(self.sliders)>0: self.parameters = []
 
         for widget in self.parametersFrame.winfo_children():
@@ -229,11 +287,12 @@ class GUI(Tk):
 
         for i in range(self.MAX_F):
             filter = self.filters[i]
-            param = SliderParameter(self.parametersFrame,filter["type"], filter["Q"], filter["id"])
+            param = SliderParameter(self.parametersFrame,filter["type"], filter["Q"], int(filter["id"]))
             self.parameters.append(param)
 
 
     def _showParameters(self):
+        """ Turn advanced mode ON or OFF """
         if self.isAdvancedMode:
             self.parametersFrame.grid_forget()
             self.isAdvancedMode = False
@@ -243,6 +302,7 @@ class GUI(Tk):
 
 
     def _createConfigFile(self):
+        """ If not created, make a default config file """
         frequency = [64,125,250,500,750,1000,1500,2000,3000,4000,6000,8000]
 
         for i in range(self.MAX_F):

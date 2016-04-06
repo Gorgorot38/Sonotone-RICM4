@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Mon Apr 04 14:15:52 2016
@@ -11,6 +12,13 @@ from xml.dom import minidom
 
 
 class ConfigWritter():
+    """
+        Writter to save parameter of filter in config file
+
+        parameter:
+            filename: String
+                Name of the config file
+    """
 
     def __init__(self, filename):
         if len(filename)<5 or filename[-4:] != ".xml":
@@ -23,6 +31,14 @@ class ConfigWritter():
 
 
     def write(self,argumentsFilter):
+        """
+            Write parameter of filter in config file
+
+            parameter:
+                argumentsFilter: Dict
+                    A dictionnary containing all parameter of a filter
+
+        """
         if type(argumentsFilter) != type({}):
             raise TypeError("argumentsFilter must be a dictionnary")
 
@@ -32,6 +48,7 @@ class ConfigWritter():
         filterTag.append(ET.Element("filter",argumentsFilter))
 
     def close(self):
+        """ Close the config file """
         with open(self.filename,"w") as f:
             f.write(self._prettify(self.root))
 

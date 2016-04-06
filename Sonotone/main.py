@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Tue Apr 05 09:18:50 2016
@@ -24,7 +25,11 @@ from Sonotone.parser.xmlparser import *
 from Sonotone.filters.biquad import *
 
 class Main(PyAudio):
+    """
+        Main of Sontone
 
+        Get microphone sound and apply filter written in configuration file
+    """
 
     def __init__(self):
         PyAudio.__init__(self)
@@ -45,6 +50,7 @@ class Main(PyAudio):
 
 
     def start(self):
+        """ Start sound acquisition and transmit sound to speakers """
         self.stream = self.open(format = self.get_format_from_width(self.WIDTH),
                                 channels = self.CHANNELS,
                                 rate = self.RATE,
@@ -59,12 +65,22 @@ class Main(PyAudio):
 
 
     def stop(self):
+        """ Stop sound acquisition """
         self.stream.stop_stream()
         self.stream.close()
         self.terminate()
 
     def _callback(self,in_data, frame_count, time_info, status):
+        """
+            Callback function, call periodicly by pyaudio
+            Allow audio transformations
 
+            parameter:
+                in_data
+                frame_count
+                time_info
+                status
+        """
 
         audio_data = array([], dtype=float16)
         strData = ""
@@ -90,7 +106,15 @@ class Main(PyAudio):
         return (strData, paContinue)
 
     def _filterData(self,data):
+        """ Apply all filters to data
 
+            parameter:
+                data: ndarray
+                    Data to be filtered
+            return:
+                dataFiltered: ndarray
+                    Data filtered
+        """
         for f, gain in self.filters:
             if float(gain) != 0.0: data = f.filter(data)
 
